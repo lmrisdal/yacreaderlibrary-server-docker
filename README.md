@@ -29,6 +29,32 @@ If you would like to use the default `unarr` backend, then you do not need to ad
 
 This docker image is also available from the GitHub container registry: `ghcr.io/xthursdayx/yacreaderlibrary-server-docker`
 
+## GitHub Actions Builds
+
+This repo includes a GitHub Actions workflow at [.github/workflows/docker-build-and-publish.yml](/Users/lars/Developer/github/yacreaderlibrary-server-docker/.github/workflows/docker-build-and-publish.yml) that will:
+
+* build both `unarr` and `7zip` images for `amd64` and `arm64`
+* validate builds on pull requests and pushes to `main`
+* publish multi-arch images to `ghcr.io/<owner>/<repo>` when you publish a GitHub release
+
+### Secrets and Permissions
+
+To publish from your fork:
+
+* GitHub Container Registry uses the default `GITHUB_TOKEN`
+* in your repository settings, make sure workflow permissions allow `Read and write permissions` so Actions can publish packages
+
+### How to Publish
+
+* open the `Container Images` workflow manually and set `publish=true`, or
+* create a GitHub release to publish versioned images automatically
+
+Published tags include:
+
+* `unarr`, `7zip`, and `latest` as multi-arch tags
+* `unarr-amd64`, `unarr-arm64v8`, `7zip-amd64`, and `7zip-arm64v8` as per-architecture tags
+* on releases, `<release-tag>`, `<release-tag>-unarr`, and `<release-tag>-7zip`
+
 ### Supported Architectures
 
 This image supports multiple architectures, specifically `x86-64` and `arm64`, through the use of a docker manifest for multi-platform awareness. You can read more about docker manifests [here](https://github.com/docker/distribution/blob/master/docs/spec/manifest-v2-2.md#manifest-list).
