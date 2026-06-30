@@ -33,9 +33,9 @@ This docker image is also available from the GitHub container registry: `ghcr.io
 
 This repo includes a GitHub Actions workflow at [.github/workflows/docker-build-and-publish.yml](/Users/lars/Developer/github/yacreaderlibrary-server-docker/.github/workflows/docker-build-and-publish.yml) that will:
 
-* build both `unarr` and `7zip` images for `amd64` and `arm64`
+* build both `unarr` and `7zip` images for `amd64`
 * validate builds on pull requests and pushes to `main`
-* publish multi-arch images to `ghcr.io/<owner>/<repo>` when you publish a GitHub release
+* publish `amd64` images to `ghcr.io/<owner>/<repo>` when you publish a GitHub release
 
 ### Secrets and Permissions
 
@@ -51,15 +51,17 @@ To publish from your fork:
 
 Published tags include:
 
-* `unarr`, `7zip`, and `latest` as multi-arch tags
-* `unarr-amd64`, `unarr-arm64v8`, `7zip-amd64`, and `7zip-arm64v8` as per-architecture tags
+* `unarr`, `7zip`, and `latest`
+* `unarr-amd64` and `7zip-amd64` as per-architecture tags
 * on releases, `<release-tag>`, `<release-tag>-unarr`, and `<release-tag>-7zip`
+
+`arm64` build definitions are still kept in the workflow and Dockerfiles, but are currently commented out in [.github/workflows/docker-build-and-publish.yml](/Users/lars/Developer/github/yacreaderlibrary-server-docker/.github/workflows/docker-build-and-publish.yml). Uncomment them when you want to resume publishing `arm64` images.
 
 ### Supported Architectures
 
-This image supports multiple architectures, specifically `x86-64` and `arm64`, through the use of a docker manifest for multi-platform awareness. You can read more about docker manifests [here](https://github.com/docker/distribution/blob/master/docs/spec/manifest-v2-2.md#manifest-list).
+This image currently publishes `x86-64` (`amd64`) images. The `arm64` build files are still kept in the repository, and can be re-enabled in the workflow when needed. You can read more about docker manifests [here](https://github.com/docker/distribution/blob/master/docs/spec/manifest-v2-2.md#manifest-list).
 
-There is a tagged `unarr` and `7zip` version of the image for each supported architecture. Simply pulling `xthursdayx/yacreaderlibrary-server-docker:<tag>` should retrieve the correct image for your arch, but you can also pull specific arch images via tags.
+There is a tagged `unarr` and `7zip` version of the image for the currently published architecture. Simply pulling `xthursdayx/yacreaderlibrary-server-docker:<tag>` should retrieve the correct image for your arch, and you can also pull the specific `amd64` tags directly.
 
 The architectures supported by this image, and the associated tags are:
 
@@ -69,8 +71,6 @@ The architectures supported by this image, and the associated tags are:
 | x86-64 | 7zip |
 | x86-64 | unarr-amd64 |
 | x86-64 | 7zip-amd64 |
-| arm64 | unarr-arm64v8 |
-| arm64 | 7zip-arm64v8 |
 
 Here are some examples to help you get started creating a container from this image. If you are an UNRAID user you can access my [UNRAID YACReaderLibraryServer template](https://raw.githubusercontent.com/xthursdayx/docker-templates/master/xthursdayx/yacserver.xml) in Community Apps.
 

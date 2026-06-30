@@ -49,24 +49,24 @@ jobs:
             platform: linux/amd64
             context: unarr
             dockerfile: unarr/Dockerfile
-          - variant: unarr
-            arch_name: arm64
-            arch_tag: arm64v8
-            platform: linux/arm64/v8
-            context: unarr
-            dockerfile: unarr/Dockerfile.aarch64
+          # - variant: unarr
+          #   arch_name: arm64
+          #   arch_tag: arm64v8
+          #   platform: linux/arm64/v8
+          #   context: unarr
+          #   dockerfile: unarr/Dockerfile.aarch64
           - variant: 7zip
             arch_name: amd64
             arch_tag: amd64
             platform: linux/amd64
             context: 7zip
             dockerfile: 7zip/Dockerfile
-          - variant: 7zip
-            arch_name: arm64
-            arch_tag: arm64v8
-            platform: linux/arm64/v8
-            context: 7zip
-            dockerfile: 7zip/Dockerfile.aarch64
+          # - variant: 7zip
+          #   arch_name: arm64
+          #   arch_tag: arm64v8
+          #   platform: linux/arm64/v8
+          #   context: 7zip
+          #   dockerfile: 7zip/Dockerfile.aarch64
     env:
       SHOULD_PUSH: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish == 'true') }}
     steps:
@@ -133,23 +133,23 @@ jobs:
           docker buildx imagetools create \
             -t "${GHCR_IMAGE}:unarr" \
             -t "${GHCR_IMAGE}:latest" \
-            "${GHCR_IMAGE}:unarr-amd64" \
-            "${GHCR_IMAGE}:unarr-arm64v8"
+            "${GHCR_IMAGE}:unarr-amd64"
+            # "${GHCR_IMAGE}:unarr-arm64v8"
 
           docker buildx imagetools create \
             -t "${GHCR_IMAGE}:7zip" \
-            "${GHCR_IMAGE}:7zip-amd64" \
-            "${GHCR_IMAGE}:7zip-arm64v8"
+            "${GHCR_IMAGE}:7zip-amd64"
+            # "${GHCR_IMAGE}:7zip-arm64v8"
 
           if [ -n "${RELEASE_TAG}" ]; then
             docker buildx imagetools create \
               -t "${GHCR_IMAGE}:${RELEASE_TAG}" \
               -t "${GHCR_IMAGE}:${RELEASE_TAG}-unarr" \
-              "${GHCR_IMAGE}:unarr-amd64" \
-              "${GHCR_IMAGE}:unarr-arm64v8"
+              "${GHCR_IMAGE}:unarr-amd64"
+              # "${GHCR_IMAGE}:unarr-arm64v8"
 
             docker buildx imagetools create \
               -t "${GHCR_IMAGE}:${RELEASE_TAG}-7zip" \
-              "${GHCR_IMAGE}:7zip-amd64" \
-              "${GHCR_IMAGE}:7zip-arm64v8"
+              "${GHCR_IMAGE}:7zip-amd64"
+              # "${GHCR_IMAGE}:7zip-arm64v8"
           fi
