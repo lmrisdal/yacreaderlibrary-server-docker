@@ -1,29 +1,25 @@
-FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy
+FROM ghcr.io/linuxserver/baseimage-ubuntu:noble AS builder
 
-# package versions
 ARG YACR_VERSION="10.0.0"
-
-# env variables
 ARG DEBIAN_FRONTEND="noninteractive"
+
 ENV APPNAME="YACReaderLibraryServer"
 ENV HOME="/config"
+
 LABEL maintainer="xthursdayx"
 
-# install build & runtime packages
 RUN \
     apt-get update && \
     apt-get install -y --no-install-recommends \
        build-essential \
        cmake \
+       ninja-build \
        desktop-file-utils \
        gcc \
        g++ \
        git \
-       qtchooser \
        qt6-tools-dev \
        qt6-base-dev-tools \
-       qmake6 \
-       qmake6-bin \
        qt6-base-dev \
        qt6-multimedia-dev \
        qt6-tools-dev-tools \
@@ -45,54 +41,58 @@ RUN \
        qt6-image-formats-plugins \
        libqt6sql6 \
        libqt6sql6-sqlite \
+       libpoppler-qt6-dev \
        make \
-       p7zip-full \
        sqlite3 \
        libsqlite3-dev \
        unzip \
        wget \
        zlib1g-dev && \
-# install unarr libraries
-#    git clone -b master --single-branch https://github.com/selmf/unarr.git /tmp/unarr && \
-#    cd /tmp/unarr && \
-#    mkdir -p build && \
-#    cd build && \
-#    cmake -DENABLE_7Z=ON .. && \
-#    make && \
-#    make install && \
-# fix qtchooser qmake install - https://askubuntu.com/questions/1460242/ubuntu-22-04-with-qt6-qmake-could-not-find-a-qt-installation-of
-    qtchooser -install qt6 $(which qmake6) && \
-    export QT ELECT=qt6 && \
-# build yacreaderlibraryserver
-    git clone -b master --single-branch https://github.com/YACReader/yacreader.git /src/git && \
-    cd /src/git && \
-    git checkout $YACR_VERSION && \
-    cd /src/git/YACReaderLibraryServer && \
-    qtchooser -list-versions && \
-    qmake6 PREFIX=/app CONFIG+="unarr no_pdf server_standalone" YACReaderLibraryServer.pro && \
-    qmake6 -v && \
-    make  && \
-    make install && \
-# clean up
-    cd / && \
-    apt-get clean && \
-    apt-get purge -y build-essential cmake g++ gcc git make qmake6 qtchooser unzip wget && \
-    apt-get -y autoremove && \
-    apt-get install -y --no-install-recommends \
-       libqt6core5compat6-dev && \
-    rm -rf \
-       /src \
-       /tmp/* \
-       /var/cache/apt \
-       /var/lib/apt/lists/*
+    ldconfig
 
-# set ENV
+RUN \
+    git clone https://github.com/YACReader/yacreader.git /src/git && \
+    cd /src/git && \
+    git checkout "$YACR_VERSION"
+
+RUN \
+    cd /src/git && \
+    cmake -B build -G Ninja \
+      -DCMAKE_INSTALL_PREFIX=/app \
+      -DDECOMPRESSION_BACKEND=unarr \
+      -DPDF_BACKEND=poppler \
+      -DBUILD_SERVER_STANDALONE=ON \
+      -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build --parallel && \
+    cmake --install build
+
+FROM ghcr.io/linuxserver/baseimage-ubuntu:noble
+
+ARG DEBIAN_FRONTEND="noninteractive"
+
+ENV APPNAME="YACReaderLibraryServer"
+ENV HOME="/config"
+
+LABEL maintainer="xthursdayx"
+
+COPY --from=builder /app /app
+
+RUN \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+       libqt6core5compat6 \
+       libpoppler-qt6-3t64 \
+       libunarr1 \
+       qt6-image-formats-plugins \
+       libqt6network6t64 \
+       libqt6sql6-sqlite && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 ENV LC_ALL="en_US.UTF-8" \
     PATH="/app/bin:${PATH}"
 
-# copy files
 COPY root/ /
 
-# ports and volumes
 EXPOSE 8080
 VOLUME ["/config", "/comics"]
